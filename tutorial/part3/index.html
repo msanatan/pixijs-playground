@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Part 3</title>
+  <link rel="stylesheet" href="reset.css" type="text/css">
+</head>
+
+<body>
+  <canvas id="app"></canvas>
+  <script src="./pixi.min.js"></script>
+  <script type="text/javascript">
+    const canvas = document.getElementById('app');
+
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    // Initialize Pixi for entire window
+    const renderer = new PIXI.Renderer({
+      view: canvas,
+      width: width,
+      height: height,
+      backgroundColor: 0xD5F5E3,
+      // Add configs to make it look good on HiDPI devices
+      resolution: window.devicePixelRatio, // Set the devices resolution
+      autoDensity: true, // Auto-resize the drawing to our width and height
+    });
+
+    window.addEventListener('resize', () => {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      renderer.resize(width, height);
+    });
+
+    const stage = new PIXI.Container();
+
+    // Create sprite, first adding it's texture
+    const texture = PIXI.Texture.from('me.png');
+    const sprite = new PIXI.Sprite(texture);
+    // Move the sprite's origin from the top-left to the centre
+    sprite.anchor.x = 0.5
+    sprite.anchor.y = 0.5
+
+    // Add sprite to the stage i.e. screen
+    stage.addChild(sprite);
+
+    // Create ticker for animation updates
+    const ticker = new PIXI.Ticker();
+    ticker.add(() => {
+      // Update sprite's position in animation loop in case the screen is reized
+      sprite.x = renderer.screen.width / 2;
+      sprite.y = renderer.screen.height / 2;
+      sprite.rotation += 0.1;
+      // Render the stage we created every loop
+      renderer.render(stage);
+    });
+    ticker.start();
+  </script>
+</body>
+
+</html>
