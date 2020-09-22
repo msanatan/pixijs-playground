@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Part 1</title>
+  <link rel="stylesheet" href="reset.css" type="text/css">
+</head>
+
+<body>
+  <canvas id="app"></canvas>
+  <script src="./pixi.min.js"></script>
+  <script type="text/javascript">
+    const canvas = document.getElementById('app');
+    // Initialize Pixi for entire window
+    const app = new PIXI.Application({
+      view: canvas,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      backgroundColor: 0xD5F5E3
+    });
+
+    // Create sprite, first adding it's texture
+    const texture = PIXI.Texture.from('me.png');
+    const sprite = new PIXI.Sprite(texture);
+    sprite.x = app.renderer.width / 2;
+    sprite.y = app.renderer.height / 2;
+    // Move the sprite's origin from the top-left to the centre
+    sprite.anchor.x = 0.5
+    sprite.anchor.y = 0.5
+
+    // Add sprite to the stage i.e. screen
+    app.stage.addChild(sprite);
+  </script>
+</body>
+
+</html>
