@@ -45,11 +45,11 @@
 
     // Create ticker for animation updates
     const ticker = new PIXI.Ticker();
-    ticker.add(() => {
+    ticker.add((delta) => {
       // Update sprite's position in animation loop in case the screen is reized
       sprite.x = renderer.screen.width / 2;
       sprite.y = renderer.screen.height / 2;
-      sprite.rotation += 0.1;
+      sprite.rotation += 0.1 * delta;
       // Render the stage we created every loop
       renderer.render(stage);
     });
