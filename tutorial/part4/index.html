@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Part 4</title>
+  <link rel="stylesheet" href="reset.css" type="text/css">
+</head>
+
+<body>
+  <canvas id="app"></canvas>
+  <script src="./pixi.min.js"></script>
+  <script type="text/javascript">
+    const canvas = document.getElementById('app');
+    // Initialize Pixi for entire window
+    const app = new PIXI.Application({
+      view: canvas,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      backgroundColor: 0xD5F5E3,
+    });
+
+    console.log(PIXI.utils.TextureCache);
+
+    const handleLoadComplete = () => {
+      let texture = loader.resources['me'].texture;
+      let sprite = new PIXI.Sprite(texture);
+      sprite.anchor.set(0.5);
+      app.stage.addChild(sprite);
+
+      app.ticker.add((delta) => {
+        // Update sprite's position in animation loop in case the screen is reized
+        sprite.x = app.renderer.screen.width / 2;
+        sprite.y = app.renderer.screen.height / 2;
+        sprite.rotation += 0.1 * delta;
+      });
+    }
+
+    const handleLoadProgress = (loader, resource) => {
+      console.log(loader.progress + '% loaded');
+    };
+
+    const handleLoadError = (error) => {
+      console.error(`encountered error loading: ${error}`);
+    };
+
+    const handleLoadAsset = (loader, resource) => {
+      console.log('asset loaded: ' + resource.name);
+    };
+
+    const loader = PIXI.Loader.shared;
+    loader.onComplete.add(handleLoadComplete);
+    loader.onLoad.add(handleLoadAsset);
+    loader.onError.add(handleLoadError);
+    loader.onProgress.add(handleLoadProgress);
+    loader.add('me', 'me.png')
+      .load();
+
+  </script>
+</body>
+
+</html>
