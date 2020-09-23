@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Part 6</title>
+  <link rel="stylesheet" href="reset.css" type="text/css">
+</head>
+
+<body>
+  <canvas id="app"></canvas>
+  <script src="./pixi.min.js"></script>
+  <script type="text/javascript">
+    const canvas = document.getElementById('app');
+    // Initialize Pixi for entire window
+    const app = new PIXI.Application({
+      view: canvas,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      backgroundColor: 0xD5F5E3
+    });
+
+    // Create circle
+    let radius = 100;
+    const circleGraphic = new PIXI.Graphics();
+    circleGraphic.x = app.renderer.width / 2;
+    circleGraphic.y = app.renderer.height / 2;
+    app.stage.addChild(circleGraphic);
+
+    // Draw rect
+    const rectGraphic = new PIXI.Graphics();
+    rectGraphic.x = 300;
+    rectGraphic.y = 500;
+    app.stage.addChild(rectGraphic);
+    rectGraphic.lineStyle(5, 0x00ff00);
+    rectGraphic.beginFill(0xff0000);
+    rectGraphic.drawRect(0, 0, 100, 200);
+    rectGraphic.endFill();
+
+    // Draw star
+    const starGraphic = new PIXI.Graphics();
+    starGraphic.x = 1500;
+    starGraphic.y = 600;
+    app.stage.addChild(starGraphic);
+    starGraphic.lineStyle(5, 0x00ff00);
+    starGraphic.beginFill(0xff0000);
+    starGraphic.drawStar(0, 0, 5, 100, 50);
+    starGraphic.closePath();
+    starGraphic.endFill();
+
+    let delta = 0;
+    const animate = () => {
+      delta += 0.1;
+      radius = 100 + Math.sin(delta) * 25;
+
+      // Draw circle with animated radius
+      circleGraphic.clear();
+      circleGraphic.lineStyle(5, 0x00ff00);
+      circleGraphic.beginFill(0xff0000);
+      circleGraphic.drawCircle(0, 0, radius);
+      circleGraphic.endFill();
+    };
+    app.ticker.add(animate);
+  </script>
+</body>
+
+</html>
