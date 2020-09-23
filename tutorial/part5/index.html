@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Part 5</title>
+  <link rel="stylesheet" href="reset.css" type="text/css">
+</head>
+
+<body>
+  <canvas id="app"></canvas>
+  <script src="./pixi.min.js"></script>
+  <script type="text/javascript">
+    const BASE_Y = 300;
+    const canvas = document.getElementById('app');
+    // Initialize Pixi for entire window
+    const app = new PIXI.Application({
+      view: canvas,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      backgroundColor: 0xD5F5E3
+    });
+
+    // Create container for sprites
+    const container = new PIXI.Container();
+    app.stage.addChild(container);
+
+    // Create sprite, first adding it's texture
+    const texture1 = PIXI.Texture.from('me.png');
+    const sprite1 = new PIXI.Sprite(texture1);
+    sprite1.x = app.renderer.width / 2;
+    sprite1.y = BASE_Y;
+    container.addChild(sprite1);
+
+    const texture2 = PIXI.Texture.from('avatar.png');
+    const sprite2 = new PIXI.Sprite(texture2);
+    sprite2.x = 100;
+    sprite2.y = BASE_Y;
+    container.addChild(sprite2);
+
+    const texture3 = PIXI.Texture.from('cuadrado-big.png');
+    const sprite3 = new PIXI.Sprite(texture3);
+    sprite3.x = 550;
+    sprite3.y = BASE_Y;
+    container.addChild(sprite3);
+
+    let delta = 0;
+    const animate = () => {
+      delta += 0.1;
+      container.y = BASE_Y + Math.sin(delta) * 10;
+      container.scale = new PIXI.Point(0.5, 0.5);
+      container.alpha = Math.sin(delta);
+    }
+    app.ticker.add(animate);
+  </script>
+</body>
+
+</html>
