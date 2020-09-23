@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Part 7</title>
+  <link rel="stylesheet" href="reset.css" type="text/css">
+</head>
+
+<body>
+  <canvas id="app"></canvas>
+  <script src="./pixi.min.js"></script>
+  <script id="vertShader" type="x-shader/x-vert">
+    attribute vec2 aVertexPosition;
+    attribute vec2 aTextureCoord;
+
+    uniform mat3 projectionMatrix;
+
+    varying vec2 vTextureCoord;
+
+    void main(void)
+    {
+        gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);
+        vTextureCoord = aTextureCoord;
+    }
+  </script>
+  <script id="fragShader" type="x-shader/x-frag">
+    varying vec2 vTextureCoord;
+    uniform sampler2D uSampler;
+    uniform float delta;
+    void main(void) {
+      vec4 color = texture2D(uSampler, vTextureCoord);
+      if (color.a != 0.0) {
+        color.r = delta;
+      }
+      gl_FragColor = color;
+    }
+  </script>
+  <script type="text/javascript">
+    const canvas = document.getElementById('app');
+    // Initialize Pixi for entire window
+    const app = new PIXI.Application({
+      view: canvas,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      backgroundColor: 0xD5F5E3
+    });
+
+    // Create new filter
+    const vShader = vertShader.innerHTML;
+    const fShader = fragShader.innerHTML;
+    const uniforms = {
+      delta: 0,
+    };
+    const firstFilter = new PIXI.Filter(vShader, fShader, uniforms);
+
+    // Create sprite, first adding it's texture
+    const texture = PIXI.Texture.from('me.png');
+    const sprite = new PIXI.Sprite(texture);
+    sprite.x = app.renderer.width / 2;
+    sprite.y = app.renderer.height / 2;
+    // Move the sprite's origin from the top-left to the centre
+    sprite.anchor.x = 0.5
+    sprite.anchor.y = 0.5
+
+    // Add filters
+    // sprite.filters = [new PIXI.filters.BlurFilter()];
+    sprite.filters = [firstFilter];
+
+    // Add sprite to the stage i.e. screen
+    app.stage.addChild(sprite);
+
+    let delta = 0;
+    const animate = () => {
+      delta += 0.1;
+      uniforms.delta = 0.5 + Math.sin(delta) * 0.5;
+    }
+    app.ticker.add(animate);
+  </script>
+  </script>
+</body>
+
+</html>
