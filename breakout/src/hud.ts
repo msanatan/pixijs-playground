@@ -17,7 +17,7 @@ export default class HUD {
     titleText.position.set(app.renderer.screen.width / 2, 50);
 
     // Write HUD info
-    const livesText = new PIXI.Text('Lives', {
+    const livesText = new PIXI.Text('Lives:', {
       fontFamily: 'Hikou Light',
       fontSize: 20,
       fill: 'white',
@@ -26,7 +26,14 @@ export default class HUD {
     livesText.anchor.set(0.5);
     livesText.position.set(35, 160);
 
-    // TODO: draw heart sprites
+    // Draw heart sprites
+    for (let i = 0; i < lives; i++) {
+      const heart = new PIXI.Sprite(PIXI.Texture.from('heart'));
+      heart.position.set(livesText.getBounds().right + 10 + (i * 15), livesText.y);
+      heart.scale.set(0.75, 0.75);
+      heart.anchor.set(0.5);
+      this.container.addChild(heart);
+    }
 
     const scoreText = new PIXI.Text(`Score: ${score}`, {
       fontFamily: 'Hikou Light',
