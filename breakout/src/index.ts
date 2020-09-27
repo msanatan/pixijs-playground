@@ -1,8 +1,10 @@
 import * as PIXI from 'pixi.js';
 import * as WebFont from 'webfontloader';
-import { renderHUD } from './hud';
-import { playGame } from './game';
+import HUD from './hud';
+import Game from './game';
 
+let hud: HUD;
+let game: Game;
 const width = 432;
 const height = 768;
 const canvas = <HTMLCanvasElement>document.getElementById('app');
@@ -95,8 +97,10 @@ function loadTextures() {
 };
 
 function init() {
-  renderHUD(app, 3);
-  playGame(app);
+  game = new Game();
+  game.init(app);
+  hud = new HUD();
+  hud.init(app, game.lives, game.score);
   // Resize after game elements are loaded
   resize(app, width, height);
 };
