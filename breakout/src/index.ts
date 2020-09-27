@@ -93,6 +93,7 @@ function loadTextures() {
     .add('ball', './images/ball.png')
     .add('brick1', './images/brick1.png')
     .add('brick2', './images/brick2.png')
+    .add('heart', './images/heart.png')
     .load();
 };
 
