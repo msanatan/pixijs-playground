@@ -1,5 +1,7 @@
 import * as PIXI from 'pixi.js';
 import * as WebFont from 'webfontloader';
+import { renderHUD } from './hud';
+import { playGame } from './game';
 
 const canvas = <HTMLCanvasElement>document.getElementById('app');
 
@@ -19,60 +21,45 @@ const webFontConfig: WebFont.Config = {
     urls: ['css/fonts.css']
   },
   active() {
-    init();
+    loadTextures();
   },
 };
 
 WebFont.load(webFontConfig);
 
-const renderHUD = (app: PIXI.Application, lives: number) => {
-  const hudContainer: PIXI.Container = new PIXI.Container();
-  const titleText = new PIXI.Text('Breakout', {
-    fontFamily: 'Hikou Outline',
-    fontSize: 100,
-    fill: 'white',
-    align: 'center',
-  });
-  titleText.anchor.set(0.5);
-  titleText.position.set(app.renderer.screen.width / 2, 50);
+const handleLoadComplete = () => {
+  console.log('All textures loaded');
+  // Run actual game
+  init();
+}
 
-  // Write HUD info
-  const livesText = new PIXI.Text('Lives', {
-    fontFamily: 'Hikou Light',
-    fontSize: 20,
-    fill: 'white',
-    align: 'left',
-  });
-  livesText.anchor.set(0.5);
-  livesText.position.set(35, 160);
+const handleLoadProgress = (loader, resource) => {
+  console.debug(loader.progress + '% loaded');
+};
 
-  // TODO: draw heart sprites
+const handleLoadError = (error) => {
+  console.error(`encountered error loading: ${error}`);
+};
 
-  const scoreText = new PIXI.Text('Score', {
-    fontFamily: 'Hikou Light',
-    fontSize: 20,
-    fill: 'white',
-    align: 'left',
-  });
-  scoreText.anchor.set(0.5);
-  scoreText.position.set(app.renderer.screen.width / 2, 160);
+const handleLoadAsset = (loader, resource) => {
+  console.debug('asset loaded: ' + resource.name);
+};
 
-  // Draw horizontal line below HUD info
-  const graphics = new PIXI.Graphics();
-  graphics.lineStyle(2, 0xffffff, 1);
-  graphics.moveTo(0, 180);
-  graphics.lineTo(app.renderer.screen.width, 180);
-  graphics.closePath();
-  graphics.endFill();
-
-  hudContainer.addChild(titleText);
-  hudContainer.addChild(livesText);
-  hudContainer.addChild(scoreText);
-  hudContainer.addChild(graphics);
-  app.stage.addChild(hudContainer);
+function loadTextures() {
+  const loader = PIXI.Loader.shared;
+  loader.onComplete.add(handleLoadComplete);
+  loader.onLoad.add(handleLoadAsset);
+  loader.onError.add(handleLoadError);
+  loader.onProgress.add(handleLoadProgress);
+  loader.add('player', './images/player.png')
+    .add('ball', './images/ball.png')
+    .add('brick1', './images/brick1.png')
+    .add('brick2', './images/brick2.png')
+    .load();
 };
 
 function init() {
   renderHUD(app, 3);
-}
+  playGame(app);
+};
 
