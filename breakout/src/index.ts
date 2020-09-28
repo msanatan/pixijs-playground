@@ -104,5 +104,10 @@ function init() {
   hud.init(app, game.lives, game.score);
   // Resize after game elements are loaded
   resize(app, width, height);
+  // Start game loop
+  app.ticker.add((delta: number) => {
+    game.update(delta);
+    hud.update(delta, game.lives, game.score);
+  });
 };
 
