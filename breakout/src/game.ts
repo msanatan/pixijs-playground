@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { Brick2, Brick1 } from './brick';
+import MovingSprite from './movingSprite';
 
 export default class Game {
   private container: PIXI.Container;
@@ -23,12 +24,12 @@ export default class Game {
     this._lives = 3;
     this._score = 0;
     // Add player
-    const player = new PIXI.Sprite(PIXI.Texture.from('player'));
+    const player = new MovingSprite(PIXI.Texture.from('player'));
     player.x = (this.app.renderer.screen.width - player.width) / 2;
     player.y = this.app.renderer.screen.height - 50;
 
     // Add ball
-    const ball = new PIXI.Sprite(PIXI.Texture.from('ball'));
+    const ball = new MovingSprite(PIXI.Texture.from('ball'));
     ball.x = (this.app.renderer.screen.width - ball.width) / 2;
     ball.y = this.app.renderer.screen.height - 75;
 
