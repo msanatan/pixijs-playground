@@ -2,11 +2,13 @@ import * as PIXI from 'pixi.js';
 
 export default class HUD {
   private container: PIXI.Container;
+  private app: PIXI.Application;
   constructor() {
     this.container = new PIXI.Container();
   }
 
   init(app: PIXI.Application, lives: number, score: number) {
+    this.app = app;
     const titleText = new PIXI.Text('Breakout', {
       fontFamily: 'Hikou Outline',
       fontSize: 100,
@@ -14,7 +16,7 @@ export default class HUD {
       align: 'center',
     });
     titleText.anchor.set(0.5);
-    titleText.position.set(app.renderer.screen.width / 2, 50);
+    titleText.position.set(this.app.renderer.screen.width / 2, 50);
 
     // Write HUD info
     const livesText = new PIXI.Text('Lives:', {
@@ -42,13 +44,13 @@ export default class HUD {
       align: 'left',
     });
     scoreText.anchor.set(0.5);
-    scoreText.position.set(app.renderer.screen.width / 2, 160);
+    scoreText.position.set(this.app.renderer.screen.width / 2, 160);
 
     // Draw horizontal line below HUD info
     const graphics = new PIXI.Graphics();
     graphics.lineStyle(2, 0xffffff, 1);
     graphics.moveTo(0, 180);
-    graphics.lineTo(app.renderer.screen.width, 180);
+    graphics.lineTo(this.app.renderer.screen.width, 180);
     graphics.closePath();
     graphics.endFill();
 
@@ -56,6 +58,8 @@ export default class HUD {
     this.container.addChild(livesText);
     this.container.addChild(scoreText);
     this.container.addChild(graphics);
-    app.stage.addChild(this.container);
+    this.app.stage.addChild(this.container);
   }
+
+  update(delta: number, lives: number, score: number) { }
 }

@@ -3,6 +3,7 @@ import { Brick2, Brick1 } from './brick';
 
 export default class Game {
   private container: PIXI.Container;
+  private app: PIXI.Application;
   private _lives: number;
   private _score: number;
   constructor() {
@@ -18,17 +19,18 @@ export default class Game {
   }
 
   init(app: PIXI.Application) {
+    this.app = app;
     this._lives = 3;
     this._score = 0;
     // Add player
     const player = new PIXI.Sprite(PIXI.Texture.from('player'));
-    player.x = (app.renderer.screen.width - player.width) / 2;
-    player.y = app.renderer.screen.height - 50;
+    player.x = (this.app.renderer.screen.width - player.width) / 2;
+    player.y = this.app.renderer.screen.height - 50;
 
     // Add ball
     const ball = new PIXI.Sprite(PIXI.Texture.from('ball'));
-    ball.x = (app.renderer.screen.width - ball.width) / 2;
-    ball.y = app.renderer.screen.height - 75;
+    ball.x = (this.app.renderer.screen.width - ball.width) / 2;
+    ball.y = this.app.renderer.screen.height - 75;
 
     // Add rows of bricks
     const bricks = new PIXI.Container();
@@ -39,6 +41,8 @@ export default class Game {
     this.container.addChild(bricks);
     app.stage.addChild(this.container);
   }
+
+  update(delta: number) { }
 
   addBricks(container: PIXI.Container) {
     for (let i = 0; i < 5; i++) {
