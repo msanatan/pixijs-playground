@@ -3,6 +3,8 @@ import * as PIXI from 'pixi.js';
 export default class HUD {
   private container: PIXI.Container;
   private app: PIXI.Application;
+  private scoreText: PIXI.Text;
+  private heartContainer: PIXI.Container;
   constructor() {
     this.container = new PIXI.Container();
   }
@@ -29,22 +31,23 @@ export default class HUD {
     livesText.position.set(35, 160);
 
     // Draw heart sprites
+    this.heartContainer = new PIXI.Container();
     for (let i = 0; i < lives; i++) {
       const heart = new PIXI.Sprite(PIXI.Texture.from('heart'));
       heart.position.set(livesText.getBounds().right + 10 + (i * 15), livesText.y);
       heart.scale.set(0.75, 0.75);
       heart.anchor.set(0.5);
-      this.container.addChild(heart);
+      this.heartContainer.addChild(heart);
     }
 
-    const scoreText = new PIXI.Text(`Score: ${score}`, {
+    this.scoreText = new PIXI.Text(this.getScoreText(score), {
       fontFamily: 'Hikou Light',
       fontSize: 20,
       fill: 'white',
       align: 'left',
     });
-    scoreText.anchor.set(0.5);
-    scoreText.position.set(this.app.renderer.screen.width / 2, 160);
+    this.scoreText.anchor.set(0.5);
+    this.scoreText.position.set(this.app.renderer.screen.width / 2, 160);
 
     // Draw horizontal line below HUD info
     const graphics = new PIXI.Graphics();
@@ -56,10 +59,21 @@ export default class HUD {
 
     this.container.addChild(titleText);
     this.container.addChild(livesText);
-    this.container.addChild(scoreText);
+    this.container.addChild(this.heartContainer);
+    this.container.addChild(this.scoreText);
     this.container.addChild(graphics);
     this.app.stage.addChild(this.container);
   }
 
-  update(delta: number, lives: number, score: number) { }
+  private getScoreText(score: number) {
+    return `Score: ${score}`;
+  }
+
+  update(delta: number, lives: number, score: number) {
+    this.scoreText.text = this.getScoreText(score);
+    // Remove a heart if we lost a life
+    if (this.heartContainer.children.length > lives) {
+      this.heartContainer.removeChildAt(lives);
+    }
+  }
 }
