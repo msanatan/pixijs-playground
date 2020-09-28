@@ -5,6 +5,8 @@ import MovingSprite from './movingSprite';
 export default class Game {
   private container: PIXI.Container;
   private app: PIXI.Application;
+  private player: MovingSprite;
+  private ball: MovingSprite;
   private _lives: number;
   private _score: number;
   constructor() {
@@ -24,26 +26,29 @@ export default class Game {
     this._lives = 3;
     this._score = 0;
     // Add player
-    const player = new MovingSprite(PIXI.Texture.from('player'));
-    player.x = (this.app.renderer.screen.width - player.width) / 2;
-    player.y = this.app.renderer.screen.height - 50;
+    this.player = new MovingSprite(PIXI.Texture.from('player'));
+    this.player.x = (this.app.renderer.screen.width - this.player.width) / 2;
+    this.player.y = this.app.renderer.screen.height - 50;
 
     // Add ball
-    const ball = new MovingSprite(PIXI.Texture.from('ball'));
-    ball.x = (this.app.renderer.screen.width - ball.width) / 2;
-    ball.y = this.app.renderer.screen.height - 75;
+    this.ball = new MovingSprite(PIXI.Texture.from('ball'));
+    this.ball.x = (this.app.renderer.screen.width - this.ball.width) / 2;
+    this.ball.y = this.app.renderer.screen.height - 75;
 
     // Add rows of bricks
     const bricks = new PIXI.Container();
     this.addBricks(bricks);
 
-    this.container.addChild(player);
-    this.container.addChild(ball);
+    this.container.addChild(this.player);
+    this.container.addChild(this.ball);
     this.container.addChild(bricks);
     app.stage.addChild(this.container);
   }
 
-  update(delta: number) { }
+  update(delta: number) {
+    this.player.x += this.player.vx;
+    this.ball.x += this.player.vx;
+  }
 
   addBricks(container: PIXI.Container) {
     for (let i = 0; i < 5; i++) {
