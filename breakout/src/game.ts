@@ -39,15 +39,34 @@ export default class Game {
     const bricks = new PIXI.Container();
     this.addBricks(bricks);
 
+    // Set up listener for click events
+    this.app.renderer.plugins.interaction.on('pointerdown',
+      (click: PIXI.InteractionEvent) => this.handlePointerDown(click));
+    this.app.renderer.plugins.interaction.on('pointerup',
+      (click: PIXI.InteractionEvent) => this.handlePointerUp(click));
+
     this.container.addChild(this.player);
     this.container.addChild(this.ball);
     this.container.addChild(bricks);
     app.stage.addChild(this.container);
   }
 
+  handlePointerDown(click: PIXI.InteractionEvent) {
+    const clickOnLeft = click.data.global.x <= this.app.renderer.screen.width / 2;
+    if (clickOnLeft) {
+      this.player.vx = -5;
+    } else {
+      this.player.vx = 5;
+    }
+  }
+
+  handlePointerUp(click: PIXI.InteractionEvent) {
+    this.player.vx = 0;
+  }
+
   update(delta: number) {
-    this.player.x += this.player.vx;
-    this.ball.x += this.player.vx;
+    this.player.x += this.player.vx * delta;
+    this.ball.x += this.player.vx * delta;
   }
 
   addBricks(container: PIXI.Container) {
