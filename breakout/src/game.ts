@@ -9,6 +9,7 @@ export default class Game {
   private ball: MovingSprite;
   private _lives: number;
   private _score: number;
+  private gameStarted: boolean;
   constructor() {
     this.container = new PIXI.Container();
   }
@@ -25,6 +26,7 @@ export default class Game {
     this.app = app;
     this._lives = 3;
     this._score = 0;
+    this.gameStarted = false;
     // Add player
     this.player = new MovingSprite(PIXI.Texture.from('player'));
     this.player.x = (this.app.renderer.screen.width - this.player.width) / 2;
@@ -41,9 +43,9 @@ export default class Game {
 
     // Set up listener for click events
     this.app.renderer.plugins.interaction.on('pointerdown',
-      (click: PIXI.InteractionEvent) => this.handlePointerDown(click));
+      (event: PIXI.InteractionEvent) => this.handlePointerDown(event));
     this.app.renderer.plugins.interaction.on('pointerup',
-      (click: PIXI.InteractionEvent) => this.handlePointerUp(click));
+      (event: PIXI.InteractionEvent) => this.handlePointerUp(event));
 
     this.container.addChild(this.player);
     this.container.addChild(this.ball);
@@ -51,8 +53,17 @@ export default class Game {
     app.stage.addChild(this.container);
   }
 
-  handlePointerDown(click: PIXI.InteractionEvent) {
-    const clickOnLeft = click.data.global.x <= this.app.renderer.screen.width / 2;
+  handlePointerDown(event: PIXI.InteractionEvent) {
+    if (!this.gameStarted) {
+      this.gameStarted = true;
+      this.ball.vy = -4;
+      const ballVelocities = [-4, -3, -2, 2, 3, 4];
+      const ballVelcotyIndex = Math.floor(Math.random() * 6);
+      this.ball.vx = ballVelocities[ballVelcotyIndex];
+      return;
+    }
+
+    const clickOnLeft = event.data.global.x <= this.app.renderer.screen.width / 2;
     if (clickOnLeft) {
       this.player.vx = -5;
     } else {
@@ -60,13 +71,18 @@ export default class Game {
     }
   }
 
-  handlePointerUp(click: PIXI.InteractionEvent) {
+  handlePointerUp(event: PIXI.InteractionEvent) {
     this.player.vx = 0;
   }
 
   update(delta: number) {
     this.player.x += this.player.vx * delta;
-    this.ball.x += this.player.vx * delta;
+    if (!this.gameStarted) {
+      this.ball.x += this.player.vx * delta;
+    } else {
+      this.ball.x += this.ball.vx * delta;
+      this.ball.y += this.ball.vy * delta;
+    }
   }
 
   addBricks(container: PIXI.Container) {
