@@ -76,13 +76,27 @@ export default class Game {
   }
 
   update(delta: number) {
-    this.player.x += this.player.vx * delta;
-    if (!this.gameStarted) {
-      this.ball.x += this.player.vx * delta;
-    } else {
-      this.ball.x += this.ball.vx * delta;
-      this.ball.y += this.ball.vy * delta;
+    const playerBounds = this.player.getBounds();
+    const ballBounds = this.ball.getBounds();
+
+    // Move player
+    if (this.player.vx < 0 && playerBounds.left > 0 ||
+      this.player.vx > 0 && playerBounds.right < this.app.renderer.screen.width) {
+      this.player.x += this.player.vx * delta;
     }
+
+    // Ball collisions
+    if (ballBounds.left <= 0 || ballBounds.right >= this.app.renderer.screen.width) {
+      this.ball.vx = -this.ball.vx;
+    }
+
+    if (ballBounds.top <= this.container.getBounds().top) {
+      this.ball.vy = -this.ball.vy;
+    }
+
+    // Move ball if game started
+    this.ball.x += this.ball.vx * delta;
+    this.ball.y += this.ball.vy * delta;
   }
 
   addBricks(container: PIXI.Container) {
