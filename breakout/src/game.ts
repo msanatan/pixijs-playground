@@ -2,6 +2,12 @@ import * as PIXI from 'pixi.js';
 import { Brick2, Brick1, Brick } from './brick';
 import MovingSprite from './movingSprite';
 
+enum State {
+  PLAYING = "PLAYING",
+  GAME_OVER = "GAME_OVER",
+  WAITING = "WAITING"
+}
+
 export default class Game {
   private container: PIXI.Container;
   private app: PIXI.Application;
@@ -10,7 +16,7 @@ export default class Game {
   private bricks: PIXI.Container;
   private _lives: number;
   private _score: number;
-  private gameStarted: boolean;
+  private state: string;
   constructor() {
     this.container = new PIXI.Container();
   }
@@ -27,7 +33,7 @@ export default class Game {
     this.app = app;
     this._lives = 3;
     this._score = 0;
-    this.gameStarted = false;
+    this.state = State.WAITING;
     // Add player
     this.player = new MovingSprite(PIXI.Texture.from('player'));
     this.player.x = (this.app.renderer.screen.width - this.player.width) / 2;
@@ -55,8 +61,8 @@ export default class Game {
   }
 
   handlePointerDown(event: PIXI.InteractionEvent) {
-    if (!this.gameStarted) {
-      this.gameStarted = true;
+    if (this.state === State.WAITING) {
+      this.state = State.PLAYING;
       this.ball.vy = -4;
       const ballVelocities = [-4, -3, -2, 2, 3, 4];
       const ballVelcotyIndex = Math.floor(Math.random() * 6);
@@ -80,53 +86,65 @@ export default class Game {
     const playerBounds = this.player.getBounds();
     const ballBounds = this.ball.getBounds();
 
-    // Move player
-    if (this.player.vx < 0 && playerBounds.left > 0 ||
-      this.player.vx > 0 && playerBounds.right < this.app.renderer.screen.width) {
-      this.player.x += this.player.vx * delta;
+    // Check if ball left the screen
+    if (this.ball.worldTransform.ty >= this.app.renderer.screen.height && this.state === State.PLAYING) {
+      this._lives--;
+      this.state = State.WAITING;
+
+      if (this.lives === 0) {
+        this.state = State.GAME_OVER;
+      }
     }
 
-    // Ball collisions
-    // World collision
-    if (ballBounds.left <= 0 || ballBounds.right >= this.app.renderer.screen.width) {
-      this.ball.vx = -this.ball.vx;
-    }
+    if (this.state === State.PLAYING) {
+      // Move player
+      if (this.player.vx < 0 && playerBounds.left > 0 ||
+        this.player.vx > 0 && playerBounds.right < this.app.renderer.screen.width) {
+        this.player.x += this.player.vx * delta;
+      }
 
-    if (ballBounds.top <= this.container.getBounds().top) {
-      this.ball.vy = -this.ball.vy;
-    }
+      // Ball collisions
+      // World collision
+      if (ballBounds.left <= 0 || ballBounds.right >= this.app.renderer.screen.width) {
+        this.ball.vx = -this.ball.vx;
+      }
 
-    // Brick collision
-    this.bricks.children.forEach((brick: Brick) => {
-      if (this.collide(ballBounds, brick.getBounds())) {
-        // Remove one from the hitpoints
-        brick.hit();
-        // If a brick that's type Brick2 got hit, change it's texture
-        if (brick.brickType === 'brick2') {
-          brick.texture = PIXI.Texture.from('brick1');
-        }
-
-        // Add to score
-        this._score += brick.score;
-
-        // Change the ball velocity
+      if (this.ball.worldTransform.ty <= this.container.getBounds().top) {
         this.ball.vy = -this.ball.vy;
       }
 
-      // Clean up breaks as we're looping through them
-      if (brick.hitPoints === 0) {
-        brick.destroy();
+      // Brick collision
+      this.bricks.children.forEach((brick: Brick) => {
+        if (this.collide(ballBounds, brick.getBounds())) {
+          // Remove one from the hitpoints
+          brick.hit();
+          // If a brick that's type Brick2 got hit, change it's texture
+          if (brick.brickType === 'brick2') {
+            brick.texture = PIXI.Texture.from('brick1');
+          }
+
+          // Add to score
+          this._score += brick.score;
+
+          // Change the ball velocity
+          this.ball.vy = -this.ball.vy;
+        }
+
+        // Clean up breaks as we're looping through them
+        if (brick.hitPoints === 0) {
+          brick.destroy();
+        }
+      });
+
+      // Player collision
+      if (this.collide(ballBounds, playerBounds)) {
+        this.ball.vy = -this.ball.vy;
       }
-    });
 
-    // Player collision
-    if (this.collide(ballBounds, playerBounds)) {
-      this.ball.vy = -this.ball.vy;
+      // Move ball
+      this.ball.x += this.ball.vx * delta;
+      this.ball.y += this.ball.vy * delta;
     }
-
-    // Move ball
-    this.ball.x += this.ball.vx * delta;
-    this.ball.y += this.ball.vy * delta;
   }
 
   collide(rect1: PIXI.Rectangle, rect2: PIXI.Rectangle) {
