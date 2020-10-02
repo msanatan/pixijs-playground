@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { Brick2, Brick1 } from './brick';
+import { Brick2, Brick1, Brick } from './brick';
 import MovingSprite from './movingSprite';
 
 export default class Game {
@@ -7,6 +7,7 @@ export default class Game {
   private app: PIXI.Application;
   private player: MovingSprite;
   private ball: MovingSprite;
+  private bricks: PIXI.Container;
   private _lives: number;
   private _score: number;
   private gameStarted: boolean;
@@ -38,8 +39,8 @@ export default class Game {
     this.ball.y = this.app.renderer.screen.height - 75;
 
     // Add rows of bricks
-    const bricks = new PIXI.Container();
-    this.addBricks(bricks);
+    this.bricks = new PIXI.Container();
+    this.addBricks(this.bricks);
 
     // Set up listener for click events
     this.app.renderer.plugins.interaction.on('pointerdown',
@@ -49,7 +50,7 @@ export default class Game {
 
     this.container.addChild(this.player);
     this.container.addChild(this.ball);
-    this.container.addChild(bricks);
+    this.container.addChild(this.bricks);
     app.stage.addChild(this.container);
   }
 
@@ -86,6 +87,7 @@ export default class Game {
     }
 
     // Ball collisions
+    // World collision
     if (ballBounds.left <= 0 || ballBounds.right >= this.app.renderer.screen.width) {
       this.ball.vx = -this.ball.vx;
     }
@@ -94,14 +96,51 @@ export default class Game {
       this.ball.vy = -this.ball.vy;
     }
 
-    // Move ball if game started
+    // Brick collision
+    this.bricks.children.forEach((brick: Brick) => {
+      if (this.collide(ballBounds, brick.getBounds())) {
+        // Remove one from the hitpoints
+        brick.hit();
+        // If a brick that's type Brick2 got hit, change it's texture
+        if (brick.brickType === 'brick2') {
+          brick.texture = PIXI.Texture.from('brick1');
+        }
+
+        // Add to score
+        this._score += brick.score;
+
+        // Change the ball velocity
+        this.ball.vy = -this.ball.vy;
+      }
+
+      // Clean up breaks as we're looping through them
+      if (brick.hitPoints === 0) {
+        brick.destroy();
+      }
+    });
+
+    // Player collision
+    if (this.collide(ballBounds, playerBounds)) {
+      this.ball.vy = -this.ball.vy;
+    }
+
+    // Move ball
     this.ball.x += this.ball.vx * delta;
     this.ball.y += this.ball.vy * delta;
   }
 
+  collide(rect1: PIXI.Rectangle, rect2: PIXI.Rectangle) {
+    return (
+      rect1.x + rect1.width > rect2.x &&
+      rect1.x < rect2.x + rect2.width &&
+      rect1.y + rect1.height > rect2.y &&
+      rect1.y < rect2.y + rect2.height
+    );
+  };
+
   addBricks(container: PIXI.Container) {
     for (let i = 0; i < 5; i++) {
-      for (let j = 0; j < 4; j++) {
+      for (let j = 0; j < 3; j++) {
         const brick = j < 2 ? new Brick2() : new Brick1();
         brick.x = 25 + (i * 80);
         brick.y = 200 + (j * 100);
