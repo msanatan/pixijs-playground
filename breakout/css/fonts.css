@@ -7,3 +7,8 @@
   font-family: 'Hikou Light';
   src: url('../fonts/Hikou Light.otf');
 }
+
+@font-face {
+  font-family: 'Hikou Regular';
+  src: url('../fonts/Hikou Regular.otf');
+}

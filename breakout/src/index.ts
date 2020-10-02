@@ -55,7 +55,7 @@ window.addEventListener('resize', () => {
 
 const webFontConfig: WebFont.Config = {
   custom: {
-    families: ['Hikou Outline', 'Hikou Light'],
+    families: ['Hikou Outline', 'Hikou Light', 'Hikou Regular'],
     urls: ['css/fonts.css']
   },
   active() {
