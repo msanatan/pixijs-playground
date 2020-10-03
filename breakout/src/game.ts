@@ -136,7 +136,8 @@ export default class Game {
         ballVelocityIndex = Math.floor(Math.random() * 6);
         this.ball.vx = ballVelocities[ballVelocityIndex];
         break;
-      case State.GAME_OVER, State.GAME_WON:
+      case State.GAME_OVER:
+      case State.GAME_WON:
         this.gameOverText.visible = false;
         this.gameWonText.visible = false;
         this.gameOverCommandText.visible = false;
