@@ -5,7 +5,8 @@ import MovingSprite from './movingSprite';
 enum State {
   PLAYING = "PLAYING",
   GAME_OVER = "GAME_OVER",
-  WAITING = "WAITING"
+  WAITING = "WAITING",
+  GAME_WON = "GAME_WON"
 }
 
 export default class Game {
@@ -17,6 +18,7 @@ export default class Game {
   private waitingText: PIXI.Text;
   private gameOverText: PIXI.Text;
   private gameOverCommandText: PIXI.Text;
+  private gameWonText: PIXI.Text;
   private textDelta: number;
   private _lives: number;
   private _score: number;
@@ -79,6 +81,18 @@ export default class Game {
     this.gameOverText.visible = false;
     this.gameOverText.zIndex = 1000;
 
+    this.gameWonText = new PIXI.Text('You Won!', {
+      fontFamily: 'Hikou Regular',
+      fontSize: 90,
+      fill: 'white',
+      align: 'center',
+    });
+    this.gameWonText.anchor.set(0.5);
+    this.gameWonText.position.set(this.app.renderer.screen.width / 2,
+      this.app.renderer.screen.height / 2);
+    this.gameWonText.visible = false;
+    this.gameWonText.zIndex = 1000;
+
     this.gameOverCommandText = new PIXI.Text('Press to Start Over', {
       fontFamily: 'Hikou Regular',
       fontSize: 30,
@@ -103,6 +117,7 @@ export default class Game {
     app.stage.addChild(this.container);
     app.stage.addChild(this.waitingText);
     app.stage.addChild(this.gameOverText);
+    app.stage.addChild(this.gameWonText);
     app.stage.addChild(this.gameOverCommandText);
     this.container.alpha = 0.25;
   }
@@ -121,8 +136,9 @@ export default class Game {
         ballVelocityIndex = Math.floor(Math.random() * 6);
         this.ball.vx = ballVelocities[ballVelocityIndex];
         break;
-      case State.GAME_OVER:
+      case State.GAME_OVER, State.GAME_WON:
         this.gameOverText.visible = false;
+        this.gameWonText.visible = false;
         this.gameOverCommandText.visible = false;
         this.container.alpha = 1;
         // Reset lives + score
@@ -186,6 +202,14 @@ export default class Game {
       }
     }
 
+    // Check if the player won the game
+    if (this.bricks.children.length === 0) {
+      this.state = State.GAME_WON;
+      this.container.alpha = 0.25;
+      this.gameWonText.visible = true;
+      this.gameOverCommandText.visible = true;
+    }
+
     if (this.state === State.PLAYING) {
       // Move player
       if (this.player.vx < 0 && playerBounds.left > 0 ||
@@ -237,7 +261,7 @@ export default class Game {
     } else if (this.state === State.WAITING) {
       this.textDelta += 0.08;
       this.waitingText.alpha = Math.sin(this.textDelta);
-    } else if (this.state === State.GAME_OVER) {
+    } else if (this.state === State.GAME_OVER || this.state === State.GAME_WON) {
       this.textDelta += 0.08;
       this.gameOverCommandText.alpha = Math.sin(this.textDelta);
     }
