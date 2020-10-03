@@ -15,10 +15,13 @@ export default class Game {
   private ball: MovingSprite;
   private bricks: PIXI.Container;
   private waitingText: PIXI.Text;
+  private gameOverText: PIXI.Text;
+  private gameOverCommandText: PIXI.Text;
   private textDelta: number;
   private _lives: number;
   private _score: number;
   private state: string;
+
   constructor() {
     this.container = new PIXI.Container();
   }
@@ -61,6 +64,32 @@ export default class Game {
     this.waitingText.anchor.set(0.5);
     this.waitingText.position.set(this.app.renderer.screen.width / 2,
       this.app.renderer.screen.height / 2);
+    this.waitingText.zIndex = 1000;
+
+    // Add game over text boxes
+    this.gameOverText = new PIXI.Text('Game Over', {
+      fontFamily: 'Hikou Regular',
+      fontSize: 90,
+      fill: 'white',
+      align: 'center',
+    });
+    this.gameOverText.anchor.set(0.5);
+    this.gameOverText.position.set(this.app.renderer.screen.width / 2,
+      this.app.renderer.screen.height / 2);
+    this.gameOverText.visible = false;
+    this.gameOverText.zIndex = 1000;
+
+    this.gameOverCommandText = new PIXI.Text('Press to Start Over', {
+      fontFamily: 'Hikou Regular',
+      fontSize: 30,
+      fill: 'white',
+      align: 'center',
+    });
+    this.gameOverCommandText.anchor.set(0.5);
+    this.gameOverCommandText.position.set(this.gameOverText.x,
+      this.gameOverText.y + 75);
+    this.gameOverCommandText.visible = false;
+    this.gameOverCommandText.zIndex = 1000;
 
     // Set up listener for click events
     this.app.renderer.plugins.interaction.on('pointerdown',
@@ -73,27 +102,62 @@ export default class Game {
     this.container.addChild(this.bricks);
     app.stage.addChild(this.container);
     app.stage.addChild(this.waitingText);
+    app.stage.addChild(this.gameOverText);
+    app.stage.addChild(this.gameOverCommandText);
     this.container.alpha = 0.25;
   }
 
   handlePointerDown(event: PIXI.InteractionEvent) {
-    if (this.state === State.WAITING) {
-      this.waitingText.visible = false;
-      this.container.alpha = 1;
-      this.state = State.PLAYING;
-      this.ball.vy = -4;
-      this.textDelta = 0;
-      const ballVelocities = [-4, -3, -2, 2, 3, 4];
-      const ballVelcotyIndex = Math.floor(Math.random() * 6);
-      this.ball.vx = ballVelocities[ballVelcotyIndex];
-      return;
-    }
+    let ballVelocities: Array<number>, ballVelocityIndex: number;
 
-    const clickOnLeft = event.data.global.x <= this.app.renderer.screen.width / 2;
-    if (clickOnLeft) {
-      this.player.vx = -5;
-    } else {
-      this.player.vx = 5;
+    switch (this.state) {
+      case State.WAITING:
+        this.waitingText.visible = false;
+        this.container.alpha = 1;
+        this.state = State.PLAYING;
+        this.ball.vy = -4;
+        this.textDelta = 0;
+        ballVelocities = [-4, -3, -2, 2, 3, 4];
+        ballVelocityIndex = Math.floor(Math.random() * 6);
+        this.ball.vx = ballVelocities[ballVelocityIndex];
+        break;
+      case State.GAME_OVER:
+        this.gameOverText.visible = false;
+        this.gameOverCommandText.visible = false;
+        this.container.alpha = 1;
+        // Reset lives + score
+        this._lives = 3;
+        this._score = 0;
+
+        // Reset bricks
+        this.bricks.destroy();
+        this.bricks = new PIXI.Container();
+        this.addBricks(this.bricks);
+
+        // Re-add bricks to container
+        this.container.addChild(this.bricks);
+
+        // Reset positions
+        this.player.x = (this.app.renderer.screen.width - this.player.width) / 2;
+        this.player.y = this.app.renderer.screen.height - 50;
+        this.ball.x = (this.app.renderer.screen.width - this.ball.width) / 2;
+        this.ball.y = this.app.renderer.screen.height - 75;
+
+        // Play stuff
+        this.state = State.PLAYING;
+        this.ball.vy = -4;
+        this.textDelta = 0;
+        ballVelocities = [-4, -3, -2, 2, 3, 4];
+        ballVelocityIndex = Math.floor(Math.random() * 6);
+        this.ball.vx = ballVelocities[ballVelocityIndex];
+        break;
+      case State.PLAYING:
+        const clickOnLeft = event.data.global.x <= this.app.renderer.screen.width / 2;
+        if (clickOnLeft) {
+          this.player.vx = -5;
+        } else {
+          this.player.vx = 5;
+        }
     }
   }
 
@@ -113,6 +177,8 @@ export default class Game {
 
       if (this.lives === 0) {
         this.state = State.GAME_OVER;
+        this.gameOverText.visible = true;
+        this.gameOverCommandText.visible = true;
       } else {
         this.ball.x = this.player.x + (this.player.width / 2) - (this.ball.width / 2);
         this.ball.y = this.player.y - 25;
@@ -171,6 +237,9 @@ export default class Game {
     } else if (this.state === State.WAITING) {
       this.textDelta += 0.08;
       this.waitingText.alpha = Math.sin(this.textDelta);
+    } else if (this.state === State.GAME_OVER) {
+      this.textDelta += 0.08;
+      this.gameOverCommandText.alpha = Math.sin(this.textDelta);
     }
   }
 
