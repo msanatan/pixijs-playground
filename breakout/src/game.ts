@@ -14,6 +14,8 @@ export default class Game {
   private player: MovingSprite;
   private ball: MovingSprite;
   private bricks: PIXI.Container;
+  private waitingText: PIXI.Text;
+  private textDelta: number;
   private _lives: number;
   private _score: number;
   private state: string;
@@ -34,6 +36,7 @@ export default class Game {
     this._lives = 3;
     this._score = 0;
     this.state = State.WAITING;
+    this.textDelta = 0;
     // Add player
     this.player = new MovingSprite(PIXI.Texture.from('player'));
     this.player.x = (this.app.renderer.screen.width - this.player.width) / 2;
@@ -48,6 +51,17 @@ export default class Game {
     this.bricks = new PIXI.Container();
     this.addBricks(this.bricks);
 
+    // Add waiting text
+    this.waitingText = new PIXI.Text('Press to\nStart', {
+      fontFamily: 'Hikou Regular',
+      fontSize: 80,
+      fill: 'white',
+      align: 'center',
+    });
+    this.waitingText.anchor.set(0.5);
+    this.waitingText.position.set(this.app.renderer.screen.width / 2,
+      this.app.renderer.screen.height / 2);
+
     // Set up listener for click events
     this.app.renderer.plugins.interaction.on('pointerdown',
       (event: PIXI.InteractionEvent) => this.handlePointerDown(event));
@@ -58,12 +72,17 @@ export default class Game {
     this.container.addChild(this.ball);
     this.container.addChild(this.bricks);
     app.stage.addChild(this.container);
+    app.stage.addChild(this.waitingText);
+    this.container.alpha = 0.25;
   }
 
   handlePointerDown(event: PIXI.InteractionEvent) {
     if (this.state === State.WAITING) {
+      this.waitingText.visible = false;
+      this.container.alpha = 1;
       this.state = State.PLAYING;
       this.ball.vy = -4;
+      this.textDelta = 0;
       const ballVelocities = [-4, -3, -2, 2, 3, 4];
       const ballVelcotyIndex = Math.floor(Math.random() * 6);
       this.ball.vx = ballVelocities[ballVelcotyIndex];
@@ -90,9 +109,14 @@ export default class Game {
     if (this.ball.worldTransform.ty >= this.app.renderer.screen.height && this.state === State.PLAYING) {
       this._lives--;
       this.state = State.WAITING;
+      this.container.alpha = 0.25;
 
       if (this.lives === 0) {
         this.state = State.GAME_OVER;
+      } else {
+        this.ball.x = this.player.x + (this.player.width / 2) - (this.ball.width / 2);
+        this.ball.y = this.player.y - 25;
+        this.waitingText.visible = true;
       }
     }
 
@@ -144,6 +168,9 @@ export default class Game {
       // Move ball
       this.ball.x += this.ball.vx * delta;
       this.ball.y += this.ball.vy * delta;
+    } else if (this.state === State.WAITING) {
+      this.textDelta += 0.08;
+      this.waitingText.alpha = Math.sin(this.textDelta);
     }
   }
 
