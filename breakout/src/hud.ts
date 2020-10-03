@@ -4,6 +4,7 @@ export default class HUD {
   private container: PIXI.Container;
   private app: PIXI.Application;
   private scoreText: PIXI.Text;
+  private livesText: PIXI.Text;
   private heartContainer: PIXI.Container;
   constructor() {
     this.container = new PIXI.Container();
@@ -21,24 +22,18 @@ export default class HUD {
     titleText.position.set(this.app.renderer.screen.width / 2, 50);
 
     // Write HUD info
-    const livesText = new PIXI.Text('Lives:', {
+    this.livesText = new PIXI.Text('Lives:', {
       fontFamily: 'Hikou Light',
       fontSize: 20,
       fill: 'white',
       align: 'left',
     });
-    livesText.anchor.set(0.5);
-    livesText.position.set(35, 160);
+    this.livesText.anchor.set(0.5);
+    this.livesText.position.set(35, 160);
 
     // Draw heart sprites
     this.heartContainer = new PIXI.Container();
-    for (let i = 0; i < lives; i++) {
-      const heart = new PIXI.Sprite(PIXI.Texture.from('heart'));
-      heart.position.set(livesText.getBounds().right + 10 + (i * 15), livesText.y);
-      heart.scale.set(0.75, 0.75);
-      heart.anchor.set(0.5);
-      this.heartContainer.addChild(heart);
-    }
+    this.drawHearts(this.heartContainer, lives, this.livesText);
 
     this.scoreText = new PIXI.Text(this.getScoreText(score), {
       fontFamily: 'Hikou Light',
@@ -58,11 +53,21 @@ export default class HUD {
     graphics.endFill();
 
     this.container.addChild(titleText);
-    this.container.addChild(livesText);
+    this.container.addChild(this.livesText);
     this.container.addChild(this.heartContainer);
     this.container.addChild(this.scoreText);
     this.container.addChild(graphics);
     this.app.stage.addChild(this.container);
+  }
+
+  drawHearts(contianer: PIXI.Container, lives: number, livesText: PIXI.Text) {
+    for (let i = 0; i < lives; i++) {
+      const heart = new PIXI.Sprite(PIXI.Texture.from('heart'));
+      heart.position.set(livesText.getBounds().right + 10 + (i * 15), livesText.y);
+      heart.scale.set(0.75, 0.75);
+      heart.anchor.set(0.5);
+      contianer.addChild(heart);
+    }
   }
 
   private getScoreText(score: number) {
@@ -72,8 +77,9 @@ export default class HUD {
   update(delta: number, lives: number, score: number) {
     this.scoreText.text = this.getScoreText(score);
     // Remove a heart if we lost a life
-    if (this.heartContainer.children.length > lives) {
-      this.heartContainer.removeChildAt(lives);
+    if (this.heartContainer.children.length !== lives) {
+      this.heartContainer.removeChildren();
+      this.drawHearts(this.heartContainer, lives, this.livesText);
     }
   }
 }
