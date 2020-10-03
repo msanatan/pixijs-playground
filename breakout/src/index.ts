@@ -2,6 +2,7 @@ import * as PIXI from 'pixi.js';
 import * as WebFont from 'webfontloader';
 import HUD from './hud';
 import Game from './game';
+import '../css/fonts';
 
 let hud: HUD;
 let game: Game;
@@ -30,11 +31,18 @@ window.addEventListener('resize', () => {
 const webFontConfig: WebFont.Config = {
   custom: {
     families: ['Hikou Outline', 'Hikou Light', 'Hikou Regular'],
-    urls: ['css/fonts.css']
+    urls: ['../css/fonts.css']
   },
   active() {
     loadTextures();
   },
+  inactive() {
+    console.error('Could not load fonts...');
+  },
+  fontinactive(familyName: string, fvd: string) {
+    console.error(`font failed to load ${familyName}`);
+  },
+  timeout: 3000,
 };
 
 WebFont.load(webFontConfig);
