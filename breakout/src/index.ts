@@ -5,52 +5,26 @@ import Game from './game';
 
 let hud: HUD;
 let game: Game;
-const width = 432;
-const height = 768;
+const BASE_WIDTH = 432;
+const BASE_HEIGHT = 768;
+
 const canvas = <HTMLCanvasElement>document.getElementById('app');
+
 const app = new PIXI.Application({
   view: canvas,
-  width,
-  height,
+  width: BASE_WIDTH,
+  height: BASE_HEIGHT,
   backgroundColor: 0x2a164a,
   resolution: window.devicePixelRatio || 1,
   autoDensity: true,
   antialias: true,
 });
 
-/**
- * Resize function taken from https://medium.com/@michelfariarj/scale-a-pixi-js-game-to-fit-the-screen-1a32f8730e9c
- * @param app
- * @param baseWidth
- * @param baseHeight
- */
-const resize = (app: PIXI.Application, baseWidth: number, baseHeight: number) => {
-  const vpw = window.innerWidth;
-  const vph = window.innerHeight;
-  let nvw: number;
-  let nvh: number;
-
-  // If the screen's height-to-width aspect ratio is less than the game's ratio
-  // then we make the game's new height equal to the viewport's height and scale
-  // the new width
-  if (vph / vpw < baseHeight / baseWidth) {
-    nvh = vph;
-    nvw = (nvh * baseWidth) / baseHeight;
-  } else {
-    // Otherwise, we let the game's new width be equal to the viewport's width
-    // and scale it's height
-    nvw = vpw;
-    nvh = (nvw * baseHeight) / baseWidth;
-  }
-
-  // Make the game screen bigger
-  app.renderer.resize(nvw, nvh);
-  // Scale the game to main to originally desired aspect ratio
-  app.stage.scale.set(nvw / baseWidth, nvh / baseHeight);
-};
+// Resize game at startup
+resize(app, BASE_WIDTH, BASE_HEIGHT);
 
 window.addEventListener('resize', () => {
-  resize(app, width, height);
+  resize(app, BASE_WIDTH, BASE_HEIGHT);
 });
 
 const webFontConfig: WebFont.Config = {
@@ -97,13 +71,14 @@ function loadTextures() {
     .load();
 };
 
+/**
+ * Initializes the game
+ */
 function init() {
   game = new Game();
   game.init(app);
   hud = new HUD();
   hud.init(app, game.lives, game.score);
-  // Resize after game elements are loaded
-  resize(app, width, height);
   // Start game loop
   app.ticker.add((delta: number) => {
     game.update(delta);
@@ -111,3 +86,33 @@ function init() {
   });
 };
 
+/**
+ * Resizes PIXI application window
+ * Taken from https://medium.com/@michelfariarj/scale-a-pixi-js-game-to-fit-the-screen-1a32f8730e9c
+ * However, the scaling didn't work across devices
+ * Resizing the canvas element was best, that's taken from
+ * https://stackoverflow.com/questions/30554533/dynamically-resize-the-pixi-stage-and-its-contents-on-window-resize-and-window
+ * @param app
+ * @param width
+ * @param height
+ */
+function resize(app: PIXI.Application, width: number, height: number) {
+  const viewportWidth: number = window.innerWidth;
+  const viewportHeight: number = window.innerHeight;
+  let resizedWidth: number;
+  let resizedHeight: number;
+
+  // The aspect ratio is the ratio of the screen's sizes in different dimensions.
+  // The height-to-width aspect ratio of the game is HEIGHT / WIDTH.
+  if (viewportHeight / viewportWidth < height / width) {
+    resizedHeight = viewportHeight;
+    resizedWidth = (resizedHeight * width) / height;
+  } else {
+    resizedWidth = viewportWidth;
+    resizedHeight = (resizedWidth * height) / width;
+  }
+
+  // Scale app for resized dimensions
+  app.renderer.view.style.width = `${resizedWidth}px`;
+  app.renderer.view.style.height = `${resizedHeight}px`;
+};
